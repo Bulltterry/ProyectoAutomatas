@@ -1,3 +1,6 @@
+import juego
+
+
 def mostrar_menu():
     print("\n================================")
     print("          FUGA ESPACIAL")
@@ -9,9 +12,7 @@ def mostrar_menu():
 
 
 def iniciar_partida():
-    print("\n--- INICIAR PARTIDA ---")
-    print("El juego todavía está en desarrollo.")
-    input("\nPresiona Enter para volver al menú...")
+    juego.main()
 
 
 def mostrar_integrantes():
