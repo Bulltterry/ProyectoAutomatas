@@ -1,7 +1,13 @@
+import juego
+
+
+TITULO = "PROTOCOLO OMEGA: FUGA ESPACIAL"
+
+
 def mostrar_menu():
-    print("\n================================")
-    print("          FUGA ESPACIAL")
-    print("================================")
+    print("\n" + "=" * 42)
+    print(f"{TITULO:^42}")
+    print("=" * 42)
     print("1. Iniciar")
     print("2. Integrantes")
     print("3. Créditos")
@@ -9,9 +15,7 @@ def mostrar_menu():
 
 
 def iniciar_partida():
-    print("\n--- INICIAR PARTIDA ---")
-    print("El juego todavía está en desarrollo.")
-    input("\nPresiona Enter para volver al menú...")
+    juego.main()
 
 
 def mostrar_integrantes():
@@ -30,8 +34,8 @@ def mostrar_creditos():
     print("Desarrollado en Python.")
     print()
     print("Narrativa y AFN: Daniel")
-    print("Inventario y mundo: Marlyn")
-    print("Gramática y misiones: Josue")
+    print("Inventario y mundo (APD): Marlyn")
+    print("Gramática y misiones (GLC): Josue")
     print("Historia y combate: Danna")
     print("Integración, documentación y pruebas: Dylan")
     input("\nPresiona Enter para volver al menú...")
