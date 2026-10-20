@@ -8,6 +8,9 @@ hasta que el jugador llegue a ellos por los ductos y desbloquee la puerta desde 
 
 La transicion 'entrar_ductos' es no determinista porque puede conducir a varios
 estados distintos con la misma entrada.
+
+La transicion 'volver' depende de la pila del mundo (mundo.py): se regresa a la
+sala que queda debajo del tope, es decir, por el mismo camino por el que se entro.
 """
 
 import random
@@ -43,6 +46,31 @@ def reactor_listo(c):
         and pila[-1] == "sala_reactor"
         and sistemas.get("motores", 0) == 100
     )
+
+
+SALAS_DUCTOS = ("laboratorio_c", "comunicaciones", "hangar")
+
+
+def debajo_del_tope(sala):
+    # Simbolo que queda en el tope despues del pop.
+    return lambda c: c.get("pila_mundo", [])[-2:-1] == [sala]
+
+
+def regreso(sala):
+    # Volver al pasillo cruza la puerta; volver a otro sector usa el ducto.
+    al_pasillo = debajo_del_tope("pasillo_principal")
+
+    if sala in SALAS_DUCTOS:
+        puerta = puerta_desbloqueada(sala)
+        destinos = [("pasillo_principal", lambda c: al_pasillo(c) and puerta(c))]
+    else:
+        destinos = [("pasillo_principal", al_pasillo)]
+
+    return destinos + [
+        (otra, debajo_del_tope(otra))
+        for otra in SALAS_DUCTOS
+        if otra != sala
+    ]
 
 
 def sos_posible(c):
@@ -101,27 +129,29 @@ TRANSICIONES = {
         ("ingenieria", reactor_listo)
     ],
 
-    # Regresos normales
-    ("ingenieria", "volver_pasillo"): [
-        ("pasillo_principal", siempre)
+    # Los ductos conectan los sectores bloqueados entre si: el jugador puede
+    # anidarse sin limite (pasillo > hangar > lab > hangar > ...).
+    ("laboratorio_c", "entrar_ductos"): [
+        ("comunicaciones", siempre),
+        ("hangar", siempre),
     ],
 
-    ("soporte_vital", "volver_pasillo"): [
-        ("pasillo_principal", siempre)
+    ("comunicaciones", "entrar_ductos"): [
+        ("laboratorio_c", siempre),
+        ("hangar", siempre),
     ],
 
-    # Si se llego por ductos, primero hay que desbloquear la puerta interior.
-    ("comunicaciones", "volver_pasillo"): [
-        ("pasillo_principal", puerta_desbloqueada("comunicaciones"))
+    ("hangar", "entrar_ductos"): [
+        ("laboratorio_c", siempre),
+        ("comunicaciones", siempre),
     ],
 
-    ("hangar", "volver_pasillo"): [
-        ("pasillo_principal", puerta_desbloqueada("hangar"))
-    ],
-
-    ("laboratorio_c", "volver_pasillo"): [
-        ("pasillo_principal", puerta_desbloqueada("laboratorio_c"))
-    ],
+    # Regresos (POP): el destino lo decide la pila, no la sala actual.
+    ("ingenieria", "volver"): regreso("ingenieria"),
+    ("soporte_vital", "volver"): regreso("soporte_vital"),
+    ("comunicaciones", "volver"): regreso("comunicaciones"),
+    ("hangar", "volver"): regreso("hangar"),
+    ("laboratorio_c", "volver"): regreso("laboratorio_c"),
 
     # Final B
     ("hangar", "escapar_capsula"): [

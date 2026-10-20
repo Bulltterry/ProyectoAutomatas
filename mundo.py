@@ -16,7 +16,7 @@ PREFIJOS_PUSH = (
 )
 
 PREFIJOS_POP = (
-    "volver_",
+    "volver",
     "salir_",
 )
 

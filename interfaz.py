@@ -1301,73 +1301,8 @@ def procesar_transicion_compatible(
 # DIALOGOS GLC
 # =========================================================
 
-def obtener_dialogo_glc(
-    c,
-    estado
-):
-
-    if hasattr(
-        gramatica,
-        "hablar"
-    ):
-
-        try:
-
-            return str(
-                gramatica.hablar(
-                    c,
-                    estado
-                )
-            )
-
-        except TypeError:
-
-            try:
-
-                return str(
-                    gramatica.hablar(
-                        estado,
-                        c
-                    )
-                )
-
-            except TypeError:
-
-                pass
-
-
-    if hasattr(
-        gramatica,
-        "generar_dialogo"
-    ):
-
-        try:
-
-            return str(
-                gramatica.generar_dialogo(
-                    estado,
-                    c
-                )
-            )
-
-        except TypeError:
-
-            try:
-
-                return str(
-                    gramatica.generar_dialogo(
-                        estado
-                    )
-                )
-
-            except TypeError:
-
-                pass
-
-
-    return (
-        "La transmisión está activa."
-    )
+def obtener_dialogo_glc(c, estado):
+    return gramatica.hablar(c, estado)
 
 
 # =========================================================
@@ -5844,48 +5779,30 @@ def pantalla_habitacion(
 
         nonlocal mensaje
 
-
-        if puerta_bloqueada():
-
-            mensaje = (
-                "Desbloquea la puerta "
-                "desde este lado."
-            )
-
-            return None
-
-
+        # POP: el AFN regresa a la sala que queda debajo del tope de la pila.
         resultado = narrativa.procesar_transicion(
             estado,
-            "volver_pasillo",
+            "volver",
             c
         )
 
-
-        if (
-            resultado
-            ==
-            "TRANSICION_RECHAZADA"
-        ):
-
+        if resultado == "TRANSICION_RECHAZADA":
             mensaje = (
-                "La salida está bloqueada."
+                "Desbloquea la puerta desde este lado."
+                if puerta_bloqueada()
+                else "La salida está bloqueada."
             )
-
             return None
-
 
         reproducir_sonido(
             sonido_puerta
         )
 
-
         mundo.actualizar_pila(
             c,
-            "volver_pasillo",
+            "volver",
             resultado
         )
-
 
         return resultado
 
@@ -6018,7 +5935,31 @@ def pantalla_habitacion(
 
                     # REACTOR
 
+                    # DUCTO (PUSH): la sala nueva se abre encima de esta.
                     if (
+                        estado in narrativa.SALAS_DUCTOS
+                        and cerca(jugador, ducto_rect, 55)
+                    ):
+                        nuevo = narrativa.procesar_transicion(
+                            estado,
+                            "entrar_ductos",
+                            c
+                        )
+
+                        if nuevo == "TRANSICION_RECHAZADA":
+                            mensaje = "No puedes entrar al sistema de ductos."
+                        else:
+                            mundo.actualizar_pila(c, "entrar_ductos", nuevo)
+                            transicion_zona(nuevo, "ACCESO POR DUCTOS")
+                            salida = pantalla_habitacion(nuevo, c, True)
+
+                            # La sala anidada regresa aqui (POP) o a un final.
+                            if salida != estado:
+                                return salida
+
+                            mensaje = "Regresaste por los ductos."
+
+                    elif (
 
                         estado == "ingenieria"
 
@@ -6120,13 +6061,7 @@ def pantalla_habitacion(
 
                                 estado,
 
-                                [
-
-                                    "enviar_sos",
-                                    "transmitir_sos",
-                                    "activar_sos"
-
-                                ],
+                                ["enviar_sos_final"],
 
                                 c
                             )
@@ -6179,13 +6114,7 @@ def pantalla_habitacion(
 
                                 estado,
 
-                                [
-
-                                    "usar_capsula",
-                                    "escapar_capsula",
-                                    "activar_capsula"
-
-                                ],
+                                ["escapar_capsula"],
 
                                 c
                             )
@@ -6242,13 +6171,7 @@ def pantalla_habitacion(
 
                                 estado,
 
-                                [
-
-                                    "activar_autodestruccion",
-                                    "iniciar_autodestruccion",
-                                    "protocolo_omega"
-
-                                ],
+                                ["activar_autodestruccion"],
 
                                 c
                             )
@@ -6654,7 +6577,7 @@ def pantalla_habitacion(
 
         # DUCTO
 
-        if entrada_por_ducto:
+        if estado in narrativa.SALAS_DUCTOS:
 
             dibujar_rejilla_ducto(
                 ducto_rect

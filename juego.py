@@ -457,12 +457,15 @@ def main():
             )
 
 
-            resultado = (
-                combate.ejecutar_combate(
-                    c,
-                    estado
+            try:
+                resultado = (
+                    combate.ejecutar_combate(
+                        c,
+                        estado
+                    )
                 )
-            )
+            except EOFError:
+                return
 
 
             if resultado == "FIN_HUIDA":

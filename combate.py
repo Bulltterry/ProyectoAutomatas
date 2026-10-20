@@ -770,3 +770,85 @@ def resultado_combate(
         ]
 
     return None
+
+# =========================================================
+# COMBATE EN CONSOLA (juego.py)
+# =========================================================
+
+def ejecutar_combate(
+    c,
+    ubicacion,
+    rng=random
+):
+
+    combate = crear_combate(c)
+    print(combate["mensaje"])
+
+    while not combate_terminado(combate):
+
+        print(
+            f"\nHP: {c['vida']} | "
+            f"X-99: {c['alien_hp']} HP ({c['alien_estado']})"
+        )
+
+        acciones = [
+            ("Atacar", lambda: atacar(c, combate, rng)),
+            ("Defender", lambda: defender(c, combate, rng)),
+            ("Huir", lambda: huir(c, combate, rng)),
+        ]
+
+        for objeto in objetos_disponibles(c):
+            acciones.append((
+                f"Lanzar {OBJETOS_ARROJABLES[objeto]['nombre']}",
+                lambda o=objeto: lanzar_objeto(c, combate, o, rng),
+            ))
+
+        if ubicacion in ENTORNOS and not combate["entorno_usado"]:
+            acciones.append((
+                ENTORNOS[ubicacion]["nombre"],
+                lambda: usar_entorno(c, combate, ubicacion, rng),
+            ))
+
+        for i, (texto, _) in enumerate(acciones, 1):
+            print(f" {i}. {texto}")
+
+        opcion = input("Acción de combate: ").strip()
+
+        if not opcion.isdigit() or not 1 <= int(opcion) <= len(acciones):
+            print("Opción inválida.")
+            continue
+
+        acciones[int(opcion) - 1][1]()
+        print("> " + combate["mensaje"])
+
+        if combate["estado"] == "TURNO_X99":
+            turno_alien(c, combate, rng)
+            print("> " + combate["mensaje"])
+
+    return combate["estado"]
+
+
+if __name__ == "__main__":
+
+    # Auto-chequeo: combates con jugadas al azar siempre terminan
+    # en un final del autómata y dejan HP coherentes.
+    import builtins
+    import contextlib
+    import io
+
+    import mundo
+
+    for semilla in range(300):
+        rng = random.Random(semilla)
+        c = mundo.nuevo_mundo()
+        c["inventario"] = ["extintor", "tubo_metalico"]
+        builtins.input = lambda _: str(rng.randint(1, 6))
+
+        with contextlib.redirect_stdout(io.StringIO()):
+            fin = ejecutar_combate(c, "hangar", rng)
+
+        assert fin in FINALES_COMBATE
+        assert (fin == "FIN_DERROTA") == (c["vida"] == 0)
+        assert (fin == "FIN_VICTORIA") == c["alien_derrotado"]
+
+    print("OK: 300 combates terminan en un estado final valido.")

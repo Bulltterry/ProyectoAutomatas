@@ -2,103 +2,6 @@ import random
 import re
 
 
-BNF = r"""
-<ERROR_TRANSICION> ::= "[Astraea]:" <SUJETO> <VERBO> <PROBLEMA>
-
-<ALERTA_ALIEN> ::= "[ALERTA ROJA]:" <SUJETO> <VERBO> <EVENTO>
-
-
-<SUJETO> ::=
-    "El sistema central"
-    | "La IA Astraea"
-    | "El monitor de bioseguridad"
-
-
-<VERBO> ::=
-    "informa que"
-    | "advierte que"
-    | "detecta que"
-
-
-<PROBLEMA> ::=
-    "faltan credenciales de acceso" "."
-    | "las puertas están bloqueadas" "."
-    | "el protocolo de seguridad lo impide" "."
-
-
-<EVENTO> ::=
-    "movimiento en los ductos del techo" "."
-    | "una anomalía térmica acercándose" "."
-    | "una brecha de contención cercana" "."
-
-
-<DIALOGO_ASTRAEA> ::=
-    "[Astraea]:" <SALUDO_IA> <CONSEJOS> "."
-
-
-<DIALOGO_VOSS> ::=
-    "[Dra. Voss (holograma)]:" <SALUDO_VOSS> <CONSEJOS> "."
-
-
-<DIALOGO_UNIDAD7> ::=
-    "[Unidad-7]:" "BIP." <CONSEJOS> "."
-
-
-<SALUDO_IA> ::=
-    "Tripulante, sigo operativa."
-    | "Detecto signos vitales débiles."
-    | "Bienvenido de vuelta."
-
-
-<SALUDO_VOSS> ::=
-    "Si me escuchas, aún queda esperanza."
-    | "Escucha, no tengo mucho tiempo."
-
-
-<CONSEJOS> ::=
-    <CONSEJO>
-    | <CONSEJO> "y además" <CONSEJOS>
-
-
-<CONSEJO> ::=
-    "busca una tarjeta de acceso en el pasillo"
-    | "el soplete de ingeniería repara casi todo"
-    | "no entres al laboratorio sin armarte"
-    | "los ductos son un atajo impredecible"
-    | "la sala del reactor es la única forma de reactivar los motores"
-    | "restaura el oxígeno antes de enviar el SOS"
-
-
-<MISION> ::=
-    "recoge" <OBJETO> "para" <NPC>
-    | "repara" <SISTEMA> "para" <NPC>
-    | "derrota a" <ENEMIGO> "en" <LUGAR>
-
-
-<OBJETO> ::=
-    "la tarjeta de acceso"
-    | "el soplete de plasma"
-    | "el botiquín"
-    | "la llave maestra"
-
-
-<SISTEMA> ::=
-    "los motores"
-    | "la antena de comunicaciones"
-    | "el sistema de oxígeno"
-
-
-<ENEMIGO> ::= "el X-99"
-
-<LUGAR> ::= "el laboratorio C"
-
-<NPC> ::=
-    "la Dra. Voss"
-    | "Astraea"
-    | "la Unidad-7"
-"""
-
-
 MAX_PROF = 3
 
 
@@ -259,7 +162,7 @@ GLC = {
             "<NPC>"
         ],
         [
-            "derrota a",
+            "derrota",
             "<ENEMIGO>",
             "en",
             "<LUGAR>"
@@ -280,11 +183,13 @@ GLC = {
     ],
 
     "<ENEMIGO>": [
-        ["el X-99"]
+        ["al X-99"]
     ],
 
     "<LUGAR>": [
-        ["el laboratorio C"]
+        ["el laboratorio C"],
+        ["el hangar"],
+        ["los ductos de ventilación"]
     ],
 
     "<NPC>": [
@@ -293,6 +198,16 @@ GLC = {
         ["la Unidad-7"]
     ],
 }
+
+
+# BNF generada desde GLC: el texto entregado siempre coincide con el código.
+BNF = "\n".join(
+    f"{nt} ::= " + " | ".join(
+        " ".join(p if p in GLC else f'"{p}"' for p in prod)
+        for prod in producciones
+    )
+    for nt, producciones in GLC.items()
+)
 
 
 NPC_POR_ESCENA = {
@@ -360,7 +275,7 @@ VERIFICADORES = {
             0
         ) == 100,
 
-    "el X-99":
+    "al X-99":
         lambda c:
         c.get(
             "alien_derrotado",
@@ -373,7 +288,8 @@ def expandir(
     simbolo,
     profundidad,
     derivacion,
-    rng
+    rng,
+    usadas
 ):
 
     if simbolo not in GLC:
@@ -386,20 +302,35 @@ def expandir(
         simbolo
     ]
 
+    # Politica del generador (la gramatica no cambia): no repetir una
+    # produccion en la misma cadena, y al llegar a MAX_PROF solo elegir
+    # producciones no recursivas para que la derivacion termine.
+    usadas_aqui = usadas.setdefault(simbolo, [])
+
+    candidatas = [
+        p for p in producciones
+        if p not in usadas_aqui
+    ] or producciones
+
     if profundidad >= MAX_PROF:
 
-        produccion = producciones[0]
+        candidatas = [
+            p for p in candidatas
+            if simbolo not in p
+        ] or candidatas
 
-    else:
+    produccion = rng.choice(
+        candidatas
+    )
 
-        produccion = rng.choice(
-            producciones
-        )
+    usadas_aqui.append(
+        produccion
+    )
 
     if derivacion is not None:
 
         derivacion.append(
-            f"{simbolo} → "
+            f"{simbolo} -> "
             f"{' '.join(produccion)}"
         )
 
@@ -412,7 +343,8 @@ def expandir(
                 parte,
                 profundidad + 1,
                 derivacion,
-                rng
+                rng,
+                usadas
             )
         )
 
@@ -430,7 +362,8 @@ def generar(
             simbolo,
             0,
             derivacion,
-            rng
+            rng,
+            {}
         )
     )
 
@@ -621,3 +554,16 @@ if __name__ == "__main__":
                 derivacion
             )
         )
+
+
+    # Auto-chequeo: ningun dialogo repite un consejo y todos aparecen.
+    vistos = set()
+
+    for semilla in range(500):
+        texto = generar("<DIALOGO_UNIDAD7>", rng=random.Random(semilla))
+        consejos = texto.split("BIP. ", 1)[1].rstrip(".").split(" y además ")
+        assert len(consejos) == len(set(consejos)), texto
+        vistos.update(c.lower() for c in consejos)
+
+    assert len(vistos) == len(GLC["<CONSEJO>"]), vistos
+    print("\nOK: 500 dialogos sin consejos repetidos.")
