@@ -417,4 +417,180 @@ VERIFICADORES = {
         ),
 }
 
+def expandir(
+    simbolo,
+    profundidad,
+    derivacion,
+    rng,
+    usadas
+):
+
+    if simbolo not in GLC:
+
+        return [
+            simbolo
+        ]
+
+    producciones = GLC[
+        simbolo
+    ]
+
+    usadas_aqui = usadas.setdefault(simbolo, [])
+
+    candidatas = [
+        p for p in producciones
+        if p not in usadas_aqui
+    ] or producciones
+
+    if profundidad >= MAX_PROF:
+
+        candidatas = [
+            p for p in candidatas
+            if simbolo not in p
+        ] or candidatas
+
+    produccion = rng.choice(
+        candidatas
+    )
+
+    usadas_aqui.append(
+        produccion
+    )
+
+    if derivacion is not None:
+
+        derivacion.append(
+            f"{simbolo} -> "
+            f"{' '.join(produccion)}"
+        )
+
+    salida = []
+
+    for parte in produccion:
+
+        salida.extend(
+            expandir(
+                parte,
+                profundidad + 1,
+                derivacion,
+                rng,
+                usadas
+            )
+        )
+
+    return salida
+
+
+def generar(
+    simbolo,
+    derivacion=None,
+    rng=random
+):
+
+    texto = " ".join(
+        expandir(
+            simbolo,
+            0,
+            derivacion,
+            rng,
+            {}
+        )
+    )
+
+    texto = re.sub(
+        r"\s+([.,:;!?])",
+        r"\1",
+        texto
+    )
+
+    texto = re.sub(
+        r"([.:]\s+)([a-záéíóú])",
+        lambda m:
+        m.group(1)
+        + m.group(2).upper(),
+        texto
+    )
+
+    return texto
+
+
+def generar_mensaje_combate(evento, **valores):
+
+    simbolo = EVENTOS_COMBATE.get(evento)
+
+    if simbolo is None:
+        raise ValueError(
+            f"Evento de combate desconocido: {evento}"
+        )
+
+    texto = generar(
+        simbolo,
+        rng=random.Random()
+    )
+
+    try:
+        return texto.format(**valores)
+    except KeyError as error:
+        raise ValueError(
+            f"Falta el valor {error.args[0]!r} para el evento {evento!r}"
+        ) from error
+
+
+def generar_mensaje_ia(
+    contexto,
+    rng=random
+):
+
+    simbolo = {
+
+        "error_transicion":
+            "<ERROR_TRANSICION>",
+
+        "alerta_alien":
+            "<ALERTA_ALIEN>",
+
+        "alerta_alien_grafica":
+            "<ALERTA_ALIEN_GRAFICA>"
+
+    }.get(
+        contexto
+    )
+
+    if simbolo:
+
+        return generar(
+            simbolo,
+            rng=rng
+        )
+
+    return (
+        "[Astraea]: "
+        "Sistemas operando al mínimo."
+    )
+
+
+def mision_cumplida(
+    mision,
+    c
+):
+
+    requisitos = [
+
+        verificar
+
+        for texto, verificar
+        in VERIFICADORES.items()
+
+        if texto in mision
+    ]
+
+    return (
+        bool(requisitos)
+        and all(
+            verificar(c)
+            for verificar
+            in requisitos
+        )
+    )
+
 
