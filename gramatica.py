@@ -594,3 +594,169 @@ def mision_cumplida(
     )
 
 
+def hablar(
+    c,
+    estado,
+    rng=random
+):
+
+    simbolo = NPC_POR_ESCENA.get(
+        estado
+    )
+
+    if not simbolo:
+
+        return (
+            "Aquí no hay nadie "
+            "con quien hablar."
+        )
+
+    texto = generar(
+        simbolo,
+        rng=rng
+    )
+
+    mision = c.get(
+        "mision"
+    )
+
+
+    if (
+        mision
+        and mision_cumplida(
+            mision,
+            c
+        )
+    ):
+
+        c["vida"] = min(
+            100,
+            c["vida"] + 25
+        )
+
+        c[
+            "misiones_completadas"
+        ] += 1
+
+        c["mision"] = None
+
+        return (
+            f"{texto}\n"
+            f"✔ Misión cumplida: "
+            f"{mision}\n"
+            f"Recompensa: +25 HP. "
+            f"HP: {c['vida']}"
+        )
+
+
+    if mision:
+
+        return (
+            f"{texto}\n"
+            f"► Misión activa: "
+            f"{mision}"
+        )
+
+
+    for _ in range(30):
+
+        nueva = generar(
+            "<MISION>",
+            rng=rng
+        )
+
+        if not mision_cumplida(
+            nueva,
+            c
+        ):
+
+            c["mision"] = nueva
+
+            return (
+                f"{texto}\n"
+                f"► Nueva misión: "
+                f"{nueva}"
+            )
+
+    return texto
+
+
+if __name__ == "__main__":
+
+    referencias = {
+        parte
+        for producciones in GLC.values()
+        for produccion in producciones
+        for parte in produccion
+        if re.fullmatch(r"<[^<>]+>", parte)
+    }
+    assert referencias <= GLC.keys(), referencias - GLC.keys()
+    assert {
+        produccion[0]
+        for produccion in GLC["<MENSAJE_COMBATE>"]
+    } == set(EVENTOS_COMBATE.values())
+
+    print(BNF)
+
+    for simbolo in (
+        "<MISION>",
+        "<DIALOGO_ASTRAEA>",
+        "<ERROR_TRANSICION>"
+    ):
+
+        derivacion = []
+
+        cadena = generar(
+            simbolo,
+            derivacion
+        )
+
+        print(
+            f"\nCadena: "
+            f"{cadena}"
+        )
+
+        print(
+            "Derivación:\n  "
+            + "\n  ".join(
+                derivacion
+            )
+        )
+
+
+    # Auto-chequeo: ningun dialogo repite un consejo y todos aparecen.
+    vistos = set()
+
+    for semilla in range(500):
+        texto = generar("<DIALOGO_UNIDAD7>", rng=random.Random(semilla))
+        consejos = texto.split("BIP. ", 1)[1].rstrip(".").split(" y además ")
+        assert len(consejos) == len(set(consejos)), texto
+        vistos.update(c.lower() for c in consejos)
+
+    assert len(vistos) == len(GLC["<CONSEJO>"]), vistos
+    print("\nOK: 500 dialogos sin consejos repetidos.")
+
+    valores_ejemplo = {
+        "dano": 12,
+        "objeto": "Extintor",
+        "entorno": "Liberar vapor",
+    }
+    for evento in EVENTOS_COMBATE:
+        mensaje = generar_mensaje_combate(
+            evento,
+            **valores_ejemplo,
+        )
+        assert mensaje and "{" not in mensaje, (evento, mensaje)
+
+    assert generar_mensaje_combate(
+        "impacto",
+        dano=12,
+    ) == "Impactas al X-99. Daño: 12."
+    assert generar_mensaje_ia(
+        "alerta_alien_grafica"
+    ) == "Movimiento hostil detectado. La entidad X-99 se aproxima."
+
+    print(
+        f"OK: {len(EVENTOS_COMBATE)} mensajes de combate generados por la GLC."
+    )
+
