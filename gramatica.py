@@ -25,6 +25,10 @@ GLC = {
         ]
     ],
 
+    "<ALERTA_ALIEN_GRAFICA>": [
+        ["Movimiento hostil detectado. La entidad X-99 se aproxima."]
+    ],
+
     "<SUJETO>": [
         ["El sistema central"],
         ["La IA Astraea"],
@@ -67,503 +71,106 @@ GLC = {
         ],
     ],
 
-    "<DIALOGO_ASTRAEA>": [
-        [
-            "[Astraea]:",
-            "<SALUDO_IA>",
-            "<CONSEJOS>",
-            "."
-        ]
+    "<MENSAJE_COMBATE>": [
+        ["<COMBATE_INICIO>"],
+        ["<COMBATE_FALLO_ATAQUE>"],
+        ["<COMBATE_GOLPE_CRITICO>"],
+        ["<COMBATE_IMPACTO>"],
+        ["<COMBATE_ESQUIVA_PREPARADA>"],
+        ["<COMBATE_DEFENSA>"],
+        ["<COMBATE_OBJETO_INVALIDO>"],
+        ["<COMBATE_OBJETO_NO_DISPONIBLE>"],
+        ["<COMBATE_LANZAR_OBJETO>"],
+        ["<COMBATE_ENTORNO_USADO>"],
+        ["<COMBATE_SIN_ENTORNO>"],
+        ["<COMBATE_USAR_ENTORNO>"],
+        ["<COMBATE_X99_ATURDIDO>"],
+        ["<COMBATE_TURNO_PERDIDO>"],
+        ["<COMBATE_HUIDA_EXITOSA>"],
+        ["<COMBATE_HUIDA_FALLIDA>"],
+        ["<COMBATE_ATAQUE_ESQUIVADO>"],
+        ["<COMBATE_ATAQUE_X99>"],
+        ["<COMBATE_FALLO_X99>"],
+        ["<COMBATE_OPCION_INVALIDA>"],
+        ["<COMBATE_SIN_OBJETOS>"],
+        ["<COMBATE_RESULTADO_HUIDA>"],
+        ["<COMBATE_RESULTADO_VICTORIA>"],
+        ["<COMBATE_RESULTADO_HUIDA_GRAFICA>"],
+        ["<COMBATE_RESULTADO_VICTORIA_GRAFICA>"],
     ],
 
-    "<DIALOGO_VOSS>": [
-        [
-            "[Dra. Voss (holograma)]:",
-            "<SALUDO_VOSS>",
-            "<CONSEJOS>",
-            "."
-        ]
+    "<COMBATE_INICIO>": [
+        ["El X-99 emerge de las sombras."]
     ],
-
-    "<DIALOGO_UNIDAD7>": [
-        [
-            "[Unidad-7]:",
-            "BIP.",
-            "<CONSEJOS>",
-            "."
-        ]
+    "<COMBATE_FALLO_ATAQUE>": [
+        ["El disparo falla."]
     ],
-
-    "<SALUDO_IA>": [
-        [
-            "Tripulante, sigo operativa."
-        ],
-        [
-            "Detecto signos vitales débiles."
-        ],
-        [
-            "Bienvenido de vuelta."
-        ],
+    "<COMBATE_GOLPE_CRITICO>": [
+        ["¡Golpe crítico! X-99 recibe", "{dano}", "de daño."]
     ],
-
-    "<SALUDO_VOSS>": [
-        [
-            "Si me escuchas, aún queda esperanza."
-        ],
-        [
-            "Escucha, no tengo mucho tiempo."
-        ],
+    "<COMBATE_IMPACTO>": [
+        ["Impactas al X-99. Daño:", "{dano}", "."]
     ],
-
-    "<CONSEJOS>": [
-        [
-            "<CONSEJO>"
-        ],
-        [
-            "<CONSEJO>",
-            "y además",
-            "<CONSEJOS>"
-        ]
+    "<COMBATE_ESQUIVA_PREPARADA>": [
+        ["Te preparas para esquivar."]
     ],
-
-    "<CONSEJO>": [
-        [
-            "busca una tarjeta de acceso en el pasillo"
-        ],
-        [
-            "el soplete de ingeniería repara casi todo"
-        ],
-        [
-            "no entres al laboratorio sin armarte"
-        ],
-        [
-            "los ductos son un atajo impredecible"
-        ],
-        [
-            "la sala del reactor es la única forma "
-            "de reactivar los motores"
-        ],
-        [
-            "restaura el oxígeno antes de enviar el SOS"
-        ],
+    "<COMBATE_DEFENSA>": [
+        ["Intentas defenderte."]
     ],
-
-    "<MISION>": [
-        [
-            "recoge",
-            "<OBJETO>",
-            "para",
-            "<NPC>"
-        ],
-        [
-            "repara",
-            "<SISTEMA>",
-            "para",
-            "<NPC>"
-        ],
-        [
-            "derrota",
-            "<ENEMIGO>",
-            "en",
-            "<LUGAR>"
-        ],
+    "<COMBATE_OBJETO_INVALIDO>": [
+        ["Ese objeto no puede lanzarse."]
     ],
-
-    "<OBJETO>": [
-        ["la tarjeta de acceso"],
-        ["el soplete de plasma"],
-        ["el botiquín"],
-        ["la llave maestra"]
+    "<COMBATE_OBJETO_NO_DISPONIBLE>": [
+        ["No tienes ese objeto."]
     ],
-
-    "<SISTEMA>": [
-        ["los motores"],
-        ["la antena de comunicaciones"],
-        ["el sistema de oxígeno"]
+    "<COMBATE_LANZAR_OBJETO>": [
+        ["Lanzas", "{objeto}", "y causas", "{dano}", "de daño."]
     ],
-
-    "<ENEMIGO>": [
-        ["al X-99"]
+    "<COMBATE_ENTORNO_USADO>": [
+        ["Ya utilizaste el entorno de esta habitación."]
     ],
-
-    "<LUGAR>": [
-        ["el laboratorio C"],
-        ["el hangar"],
-        ["los ductos de ventilación"]
+    "<COMBATE_SIN_ENTORNO>": [
+        ["No hay nada útil que puedas usar aquí."]
     ],
-
-    "<NPC>": [
-        ["la Dra. Voss"],
-        ["Astraea"],
-        ["la Unidad-7"]
+    "<COMBATE_USAR_ENTORNO>": [
+        ["{entorno}:", "{dano}", "de daño."]
     ],
-}
-
-
-# BNF generada desde GLC: el texto entregado siempre coincide con el código.
-BNF = "\n".join(
-    f"{nt} ::= " + " | ".join(
-        " ".join(p if p in GLC else f'"{p}"' for p in prod)
-        for prod in producciones
-    )
-    for nt, producciones in GLC.items()
-)
-
-
-NPC_POR_ESCENA = {
-
-    "pasillo_principal":
-        "<DIALOGO_ASTRAEA>",
-
-    "soporte_vital":
-        "<DIALOGO_VOSS>",
-
-    "laboratorio_c":
-        "<DIALOGO_UNIDAD7>",
-}
-
-
-VERIFICADORES = {
-
-    "la tarjeta de acceso":
-        lambda c:
-        "tarjeta_acceso"
-        in c.get("inventario", []),
-
-    "el soplete de plasma":
-        lambda c:
-        "soplete_plasma"
-        in c.get("inventario", []),
-
-    "el botiquín":
-        lambda c:
-        "botiquin"
-        in c.get("inventario", []),
-
-    "la llave maestra":
-        lambda c:
-        "llave_maestra"
-        in c.get("inventario", []),
-
-    "los motores":
-        lambda c:
-        c.get(
-            "sistemas_reparados",
-            {}
-        ).get(
-            "motores",
-            0
-        ) == 100,
-
-    "la antena de comunicaciones":
-        lambda c:
-        c.get(
-            "sistemas_reparados",
-            {}
-        ).get(
-            "comunicaciones",
-            0
-        ) == 100,
-
-    "el sistema de oxígeno":
-        lambda c:
-        c.get(
-            "sistemas_reparados",
-            {}
-        ).get(
-            "oxigeno",
-            0
-        ) == 100,
-
-    "al X-99":
-        lambda c:
-        c.get(
-            "alien_derrotado",
-            False
-        ),
-}
-
-
-def expandir(
-    simbolo,
-    profundidad,
-    derivacion,
-    rng,
-    usadas
-):
-
-    if simbolo not in GLC:
-
-        return [
-            simbolo
-        ]
-
-    producciones = GLC[
-        simbolo
-    ]
-
-    # Politica del generador (la gramatica no cambia): no repetir una
-    # produccion en la misma cadena, y al llegar a MAX_PROF solo elegir
-    # producciones no recursivas para que la derivacion termine.
-    usadas_aqui = usadas.setdefault(simbolo, [])
-
-    candidatas = [
-        p for p in producciones
-        if p not in usadas_aqui
-    ] or producciones
-
-    if profundidad >= MAX_PROF:
-
-        candidatas = [
-            p for p in candidatas
-            if simbolo not in p
-        ] or candidatas
-
-    produccion = rng.choice(
-        candidatas
-    )
-
-    usadas_aqui.append(
-        produccion
-    )
-
-    if derivacion is not None:
-
-        derivacion.append(
-            f"{simbolo} -> "
-            f"{' '.join(produccion)}"
-        )
-
-    salida = []
-
-    for parte in produccion:
-
-        salida.extend(
-            expandir(
-                parte,
-                profundidad + 1,
-                derivacion,
-                rng,
-                usadas
-            )
-        )
-
-    return salida
-
-
-def generar(
-    simbolo,
-    derivacion=None,
-    rng=random
-):
-
-    texto = " ".join(
-        expandir(
-            simbolo,
-            0,
-            derivacion,
-            rng,
-            {}
-        )
-    )
-
-    texto = re.sub(
-        r"\s+([.,:;!?])",
-        r"\1",
-        texto
-    )
-
-    texto = re.sub(
-        r"([.:]\s+)([a-záéíóú])",
-        lambda m:
-        m.group(1)
-        + m.group(2).upper(),
-        texto
-    )
-
-    return texto
-
-
-def generar_mensaje_ia(
-    contexto,
-    rng=random
-):
-
-    simbolo = {
-
-        "error_transicion":
-            "<ERROR_TRANSICION>",
-
-        "alerta_alien":
-            "<ALERTA_ALIEN>"
-
-    }.get(
-        contexto
-    )
-
-    if simbolo:
-
-        return generar(
-            simbolo,
-            rng=rng
-        )
-
-    return (
-        "[Astraea]: "
-        "Sistemas operando al mínimo."
-    )
-
-
-def mision_cumplida(
-    mision,
-    c
-):
-
-    requisitos = [
-
-        verificar
-
-        for texto, verificar
-        in VERIFICADORES.items()
-
-        if texto in mision
-    ]
-
-    return (
-        bool(requisitos)
-        and all(
-            verificar(c)
-            for verificar
-            in requisitos
-        )
-    )
-
-
-def hablar(
-    c,
-    estado,
-    rng=random
-):
-
-    simbolo = NPC_POR_ESCENA.get(
-        estado
-    )
-
-    if not simbolo:
-
-        return (
-            "Aquí no hay nadie "
-            "con quien hablar."
-        )
-
-    texto = generar(
-        simbolo,
-        rng=rng
-    )
-
-    mision = c.get(
-        "mision"
-    )
-
-
-    if (
-        mision
-        and mision_cumplida(
-            mision,
-            c
-        )
-    ):
-
-        c["vida"] = min(
-            100,
-            c["vida"] + 25
-        )
-
-        c[
-            "misiones_completadas"
-        ] += 1
-
-        c["mision"] = None
-
-        return (
-            f"{texto}\n"
-            f"✔ Misión cumplida: "
-            f"{mision}\n"
-            f"Recompensa: +25 HP. "
-            f"HP: {c['vida']}"
-        )
-
-
-    if mision:
-
-        return (
-            f"{texto}\n"
-            f"► Misión activa: "
-            f"{mision}"
-        )
-
-
-    for _ in range(30):
-
-        nueva = generar(
-            "<MISION>",
-            rng=rng
-        )
-
-        if not mision_cumplida(
-            nueva,
-            c
-        ):
-
-            c["mision"] = nueva
-
-            return (
-                f"{texto}\n"
-                f"► Nueva misión: "
-                f"{nueva}"
-            )
-
-    return texto
-
-
-if __name__ == "__main__":
-
-    print(BNF)
-
-    for simbolo in (
-        "<MISION>",
-        "<DIALOGO_ASTRAEA>",
-        "<ERROR_TRANSICION>"
-    ):
-
-        derivacion = []
-
-        cadena = generar(
-            simbolo,
-            derivacion
-        )
-
-        print(
-            f"\nCadena: "
-            f"{cadena}"
-        )
-
-        print(
-            "Derivación:\n  "
-            + "\n  ".join(
-                derivacion
-            )
-        )
-
-
-    # Auto-chequeo: ningun dialogo repite un consejo y todos aparecen.
-    vistos = set()
-
-    for semilla in range(500):
-        texto = generar("<DIALOGO_UNIDAD7>", rng=random.Random(semilla))
-        consejos = texto.split("BIP. ", 1)[1].rstrip(".").split(" y además ")
-        assert len(consejos) == len(set(consejos)), texto
-        vistos.update(c.lower() for c in consejos)
-
-    assert len(vistos) == len(GLC["<CONSEJO>"]), vistos
-    print("\nOK: 500 dialogos sin consejos repetidos.")
+    "<COMBATE_X99_ATURDIDO>": [
+        ["¡X-99 queda aturdido!"]
+    ],
+    "<COMBATE_TURNO_PERDIDO>": [
+        ["X-99 está aturdido y pierde su turno."]
+    ],
+    "<COMBATE_HUIDA_EXITOSA>": [
+        ["Consigues escapar del X-99."]
+    ],
+    "<COMBATE_HUIDA_FALLIDA>": [
+        ["Intentas escapar, pero X-99 bloquea tu camino."]
+    ],
+    "<COMBATE_ATAQUE_ESQUIVADO>": [
+        ["¡Esquivas el ataque del X-99!"]
+    ],
+    "<COMBATE_ATAQUE_X99>": [
+        ["X-99 te golpea. Pierdes", "{dano}", "HP."]
+    ],
+    "<COMBATE_FALLO_X99>": [
+        ["X-99 falla su ataque."]
+    ],
+    "<COMBATE_OPCION_INVALIDA>": [
+        ["Opción inválida."]
+    ],
+    "<COMBATE_SIN_OBJETOS>": [
+        ["No tienes objetos arrojables."]
+    ],
+    "<COMBATE_RESULTADO_HUIDA>": [
+        ["Lograste romper el contacto. Puedes continuar explorando."]
+    ],
+    "<COMBATE_RESULTADO_VICTORIA>": [
+        ["La amenaza X-99 ha sido neutralizada."]
+    ],
+    "<COMBATE_RESULTADO_HUIDA_GRAFICA>": [
+        ["Escapaste del X-99."]
+    ],
+    "<COMBATE_RESULTADO_VICTORIA_GRAFICA>": [
+        ["X-99 ha sido neutralizado."]
+    ],
