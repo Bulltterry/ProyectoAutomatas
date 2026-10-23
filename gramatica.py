@@ -174,3 +174,247 @@ GLC = {
     "<COMBATE_RESULTADO_VICTORIA_GRAFICA>": [
         ["X-99 ha sido neutralizado."]
     ],
+
+    "<DIALOGO_ASTRAEA>": [
+        [
+            "[Astraea]:",
+            "<SALUDO_IA>",
+            "<CONSEJOS>",
+            "."
+        ]
+    ],
+
+    "<DIALOGO_VOSS>": [
+        [
+            "[Dra. Voss (holograma)]:",
+            "<SALUDO_VOSS>",
+            "<CONSEJOS>",
+            "."
+        ]
+    ],
+
+    "<DIALOGO_UNIDAD7>": [
+        [
+            "[Unidad-7]:",
+            "BIP.",
+            "<CONSEJOS>",
+            "."
+        ]
+    ],
+
+    "<SALUDO_IA>": [
+        [
+            "Tripulante, sigo operativa."
+        ],
+        [
+            "Detecto signos vitales débiles."
+        ],
+        [
+            "Bienvenido de vuelta."
+        ],
+    ],
+
+    "<SALUDO_VOSS>": [
+        [
+            "Si me escuchas, aún queda esperanza."
+        ],
+        [
+            "Escucha, no tengo mucho tiempo."
+        ],
+    ],
+
+    "<CONSEJOS>": [
+        [
+            "<CONSEJO>"
+        ],
+        [
+            "<CONSEJO>",
+            "y además",
+            "<CONSEJOS>"
+        ]
+    ],
+
+    "<CONSEJO>": [
+        [
+            "busca una tarjeta de acceso en el pasillo"
+        ],
+        [
+            "el soplete de ingeniería repara casi todo"
+        ],
+        [
+            "no entres al laboratorio sin armarte"
+        ],
+        [
+            "los ductos son un atajo impredecible"
+        ],
+        [
+            "la sala del reactor es la única forma "
+            "de reactivar los motores"
+        ],
+        [
+            "restaura el oxígeno antes de enviar el SOS"
+        ],
+    ],
+
+    "<MISION>": [
+        [
+            "recoge",
+            "<OBJETO>",
+            "para",
+            "<NPC>"
+        ],
+        [
+            "repara",
+            "<SISTEMA>",
+            "para",
+            "<NPC>"
+        ],
+        [
+            "derrota",
+            "<ENEMIGO>",
+            "en",
+            "<LUGAR>"
+        ],
+    ],
+
+    "<OBJETO>": [
+        ["la tarjeta de acceso"],
+        ["el soplete de plasma"],
+        ["el botiquín"],
+        ["la llave maestra"]
+    ],
+
+    "<SISTEMA>": [
+        ["los motores"],
+        ["la antena de comunicaciones"],
+        ["el sistema de oxígeno"]
+    ],
+
+    "<ENEMIGO>": [
+        ["al X-99"]
+    ],
+
+    "<LUGAR>": [
+        ["el laboratorio C"],
+        ["el hangar"],
+        ["los ductos de ventilación"]
+    ],
+
+    "<NPC>": [
+        ["la Dra. Voss"],
+        ["Astraea"],
+        ["la Unidad-7"]
+    ],
+}
+
+BNF = "\n".join(
+    f"{nt} ::= " + " | ".join(
+        " ".join(p if p in GLC else f'"{p}"' for p in prod)
+        for prod in producciones
+    )
+    for nt, producciones in GLC.items()
+)
+
+EVENTOS_COMBATE = {
+    "inicio": "<COMBATE_INICIO>",
+    "disparo_falla": "<COMBATE_FALLO_ATAQUE>",
+    "golpe_critico": "<COMBATE_GOLPE_CRITICO>",
+    "impacto": "<COMBATE_IMPACTO>",
+    "esquiva_preparada": "<COMBATE_ESQUIVA_PREPARADA>",
+    "defensa": "<COMBATE_DEFENSA>",
+    "objeto_invalido": "<COMBATE_OBJETO_INVALIDO>",
+    "objeto_no_disponible": "<COMBATE_OBJETO_NO_DISPONIBLE>",
+    "lanzar_objeto": "<COMBATE_LANZAR_OBJETO>",
+    "entorno_usado": "<COMBATE_ENTORNO_USADO>",
+    "sin_entorno": "<COMBATE_SIN_ENTORNO>",
+    "usar_entorno": "<COMBATE_USAR_ENTORNO>",
+    "x99_aturdido": "<COMBATE_X99_ATURDIDO>",
+    "turno_perdido": "<COMBATE_TURNO_PERDIDO>",
+    "huida_exitosa": "<COMBATE_HUIDA_EXITOSA>",
+    "huida_fallida": "<COMBATE_HUIDA_FALLIDA>",
+    "ataque_esquivado": "<COMBATE_ATAQUE_ESQUIVADO>",
+    "ataque_x99": "<COMBATE_ATAQUE_X99>",
+    "fallo_x99": "<COMBATE_FALLO_X99>",
+    "opcion_invalida": "<COMBATE_OPCION_INVALIDA>",
+    "sin_objetos": "<COMBATE_SIN_OBJETOS>",
+    "resultado_huida": "<COMBATE_RESULTADO_HUIDA>",
+    "resultado_victoria": "<COMBATE_RESULTADO_VICTORIA>",
+    "resultado_huida_grafica": "<COMBATE_RESULTADO_HUIDA_GRAFICA>",
+    "resultado_victoria_grafica": "<COMBATE_RESULTADO_VICTORIA_GRAFICA>",
+}
+
+
+NPC_POR_ESCENA = {
+
+    "pasillo_principal":
+        "<DIALOGO_ASTRAEA>",
+
+    "soporte_vital":
+        "<DIALOGO_VOSS>",
+
+    "laboratorio_c":
+        "<DIALOGO_UNIDAD7>",
+}
+
+
+VERIFICADORES = {
+
+    "la tarjeta de acceso":
+        lambda c:
+        "tarjeta_acceso"
+        in c.get("inventario", []),
+
+    "el soplete de plasma":
+        lambda c:
+        "soplete_plasma"
+        in c.get("inventario", []),
+
+    "el botiquín":
+        lambda c:
+        "botiquin"
+        in c.get("inventario", []),
+
+    "la llave maestra":
+        lambda c:
+        "llave_maestra"
+        in c.get("inventario", []),
+
+    "los motores":
+        lambda c:
+        c.get(
+            "sistemas_reparados",
+            {}
+        ).get(
+            "motores",
+            0
+        ) == 100,
+
+    "la antena de comunicaciones":
+        lambda c:
+        c.get(
+            "sistemas_reparados",
+            {}
+        ).get(
+            "comunicaciones",
+            0
+        ) == 100,
+
+    "el sistema de oxígeno":
+        lambda c:
+        c.get(
+            "sistemas_reparados",
+            {}
+        ).get(
+            "oxigeno",
+            0
+        ) == 100,
+
+    "al X-99":
+        lambda c:
+        c.get(
+            "alien_derrotado",
+            False
+        ),
+}
+
+
