@@ -3548,6 +3548,53 @@ def dibujar_x99(
 # HUD
 # =========================================================
 
+NOMBRE_CORTO_PILA = {
+    "pasillo_principal": "Pasillo",
+    "ingenieria": "Ingenier.",
+    "sala_reactor": "Reactor",
+    "soporte_vital": "Soporte",
+    "comunicaciones": "Comms",
+    "hangar": "Hangar",
+    "laboratorio_c": "Lab C",
+}
+
+
+def dibujar_pila(c):
+    # La pila del APD siempre visible (margen derecho): Z0 abajo, tope arriba.
+    pila = c.get("pila_mundo", [])
+
+    # shortcut: caben 17 cajas; si hay más se muestran las de arriba con "...", basta para la defensa.
+    visibles = pila[-17:]
+
+    x, ancho, alto, paso = 866, 88, 24, 28
+    y = 630 - alto
+
+    for i, simbolo in enumerate(visibles):
+        es_tope = i == len(visibles) - 1
+        caja = pygame.Rect(x, y - i * paso, ancho, alto)
+
+        pygame.draw.rect(pantalla, AZUL_OSCURO, caja, border_radius=4)
+        pygame.draw.rect(pantalla, AMARILLO if es_tope else AZUL, caja, 2, border_radius=4)
+
+        escribir(
+            NOMBRE_CORTO_PILA.get(simbolo, simbolo),
+            fuente_mini,
+            AMARILLO if es_tope else CIAN,
+            x + 6,
+            caja.y + 4
+        )
+
+    tope_y = y - (len(visibles) - 1) * paso
+
+    escribir(
+        "PILA APD" if len(pila) == len(visibles) else "PILA ...",
+        fuente_mini,
+        BLANCO,
+        x + 4,
+        tope_y - 22
+    )
+
+
 def dibujar_hud(
     c,
     ubicacion,
@@ -3656,6 +3703,9 @@ def dibujar_hud(
         120,
         615
     )
+
+
+    dibujar_pila(c)
 
 
     escribir(
@@ -5619,6 +5669,9 @@ def pantalla_reactor(
         )
 
 
+        dibujar_pila(c)
+
+
         dibujar_texto_ajustado(
             mensaje,
             fuente_mini,
@@ -5653,7 +5706,7 @@ def pantalla_habitacion(
         )
 
         mensaje = (
-            "Entraste por los ductos."
+            "Entraste por los ductos. [ESC] vuelve por donde viniste."
         )
 
     else:
@@ -5672,7 +5725,8 @@ def pantalla_habitacion(
 
     velocidad = 4
 
-    combate_realizado = False
+    # Misma regla que la consola: forzado en el laboratorio, emboscada aleatoria en el resto.
+    hay_combate = combate.debe_iniciar(c, estado)
 
 
     config = CONFIG_SALAS.get(
@@ -5775,14 +5829,14 @@ def pantalla_habitacion(
         )
 
 
-    def salir():
+    def salir(decision="volver"):
 
         nonlocal mensaje
 
-        # POP: el AFN regresa a la sala que queda debajo del tope de la pila.
+        # POP: volver = sala debajo del tope; salir_puerta = pasillo.
         resultado = narrativa.procesar_transicion(
             estado,
-            "volver",
+            decision,
             c
         )
 
@@ -5800,7 +5854,7 @@ def pantalla_habitacion(
 
         mundo.actualizar_pila(
             c,
-            "volver",
+            decision,
             resultado
         )
 
@@ -5816,30 +5870,13 @@ def pantalla_habitacion(
 
         # X99
 
-        if (
+        if hay_combate:
 
-            estado == "laboratorio_c"
-
-            and
-
-            not c.get(
-                "alien_derrotado",
-                False
-            )
-
-            and
-
-            not combate_realizado
-        ):
-
-            combate_realizado = True
+            hay_combate = False
 
 
             mostrar_dialogo(
-                (
-                    "Movimiento hostil detectado. "
-                    "La entidad X-99 se aproxima."
-                ),
+                gramatica.generar_mensaje_ia("alerta_alien"),
                 "ALERTA ROJA"
             )
 
@@ -6249,7 +6286,11 @@ def pantalla_habitacion(
 
                         else:
 
-                            resultado = salir()
+                            resultado = salir(
+                                "salir_puerta"
+                                if estado in narrativa.SALAS_DUCTOS
+                                else "volver"
+                            )
 
 
                             if resultado is not None:
@@ -7086,6 +7127,19 @@ def jugar():
 
 
     estado = narrativa.ESTADO_INICIAL
+
+
+    # Escena q0 (aislado_inicio): pantalla negra con la introducción.
+    pantalla.fill(
+        NEGRO
+    )
+
+    for titulo, texto in narrativa.INTRO:
+
+        mostrar_dialogo(
+            texto,
+            titulo
+        )
 
 
     resultado = narrativa.procesar_transicion(

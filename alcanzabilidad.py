@@ -1,4 +1,6 @@
 import copy
+import os
+import re
 from collections import deque
 
 import combate
@@ -23,6 +25,7 @@ def clave(estado, c):
     return (
         estado,
         tuple(sorted(c["inventario"])),
+        tuple(sorted(c["recogidos"])),
         tuple(c["pila_mundo"]),
         sistemas["motores"],
         sistemas["comunicaciones"],
@@ -121,7 +124,6 @@ def verificar_regreso_por_pila():
         ("entrar_ductos", "laboratorio_c"),
         ("entrar_ductos", "comunicaciones"),
         ("volver", "laboratorio_c"),
-        ("volver", "hangar"),
     ]
 
     for decision, esperado in camino:
@@ -129,11 +131,14 @@ def verificar_regreso_por_pila():
         mundo.actualizar_pila(c, decision, esperado)
         estado = esperado
 
-    # Puerta del hangar cerrada: no se puede volver al pasillo todavia.
-    assert narrativa.delta(estado, "volver", c) == []
+    # Puerta del laboratorio cerrada: no se puede salir por ella.
+    assert narrativa.delta(estado, "salir_puerta", c) == []
 
-    c["puertas_desbloqueadas"]["hangar"] = True
-    assert narrativa.delta(estado, "volver", c) == ["pasillo_principal"]
+    # Abierta, la puerta lleva al pasillo y desapila todo lo de encima.
+    c["puertas_desbloqueadas"]["laboratorio_c"] = True
+    assert narrativa.delta(estado, "salir_puerta", c) == ["pasillo_principal"]
+    mundo.actualizar_pila(c, "salir_puerta", "pasillo_principal")
+    assert c["pila_mundo"] == ["Z0", "pasillo_principal"], c["pila_mundo"]
 
 
 def explorar():
@@ -175,8 +180,49 @@ def explorar():
     return escenas, finales, len(visto)
 
 
+DIAGRAMA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "docs", "01_diagrama_afn.md")
+
+
+def verificar_diagrama():
+    # El PDF exige que el diagrama coincida exactamente con el codigo.
+    if not os.path.exists(DIAGRAMA):
+        print("(Sin docs/01_diagrama_afn.md: no se compara el diagrama.)")
+        return
+
+    texto = open(DIAGRAMA, encoding="utf-8").read()
+    mermaid = texto.split("```mermaid", 1)[1].split("```", 1)[0]
+
+    dibujadas = set()
+
+    for origen, destino, etiqueta in re.findall(r"^\s*(\w+) --> (\w+) : (.+)$", mermaid, re.M):
+        for parte in etiqueta.split("·"):
+            decision = parte.split()[0]
+            dibujadas.add((origen, "vida=0" if decision.startswith("[") else decision, destino))
+
+    en_codigo = {
+        (estado, decision, destino)
+        for (estado, decision), lista in narrativa.TRANSICIONES.items()
+        for destino, _ in lista
+    }
+
+    # Muerte en combate: desde toda escena no final donde puede haber combate.
+    en_codigo |= {
+        (estado, "vida=0", "final_c_muerte")
+        for estado, _ in narrativa.TRANSICIONES
+        if combate.combate_posible(mundo.nuevo_mundo(), estado)
+    }
+
+    assert dibujadas == en_codigo, (
+        "El diagrama no coincide con narrativa.py. "
+        f"Faltan: {sorted(en_codigo - dibujadas)}. Sobran: {sorted(dibujadas - en_codigo)}"
+    )
+
+    print(f"Diagrama: {len(en_codigo)} transiciones, coincide con el código.")
+
+
 if __name__ == "__main__":
     verificar_regreso_por_pila()
+    verificar_diagrama()
 
     escenas, finales, configuraciones = explorar()
 
@@ -215,9 +261,4 @@ if __name__ == "__main__":
 
     assert set(finales) == narrativa.ESTADOS_ACEPTACION, (
         "Hay finales inalcanzables"
-    )
-
-    print(
-        "\nOK: los 4 finales son alcanzables y "
-        "el invariante del APD se cumple."
     )

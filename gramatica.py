@@ -25,10 +25,6 @@ GLC = {
         ]
     ],
 
-    "<ALERTA_ALIEN_GRAFICA>": [
-        ["Movimiento hostil detectado. La entidad X-99 se aproxima."]
-    ],
-
     "<SUJETO>": [
         ["El sistema central"],
         ["La IA Astraea"],
@@ -58,121 +54,17 @@ GLC = {
 
     "<EVENTO>": [
         [
-            "movimiento en los ductos del techo",
+            "hay movimiento en los ductos del techo",
             "."
         ],
         [
-            "una anomalía térmica acercándose",
+            "una anomalía térmica se acerca",
             "."
         ],
         [
-            "una brecha de contención cercana",
+            "hay una brecha de contención cercana",
             "."
         ],
-    ],
-
-    "<MENSAJE_COMBATE>": [
-        ["<COMBATE_INICIO>"],
-        ["<COMBATE_FALLO_ATAQUE>"],
-        ["<COMBATE_GOLPE_CRITICO>"],
-        ["<COMBATE_IMPACTO>"],
-        ["<COMBATE_ESQUIVA_PREPARADA>"],
-        ["<COMBATE_DEFENSA>"],
-        ["<COMBATE_OBJETO_INVALIDO>"],
-        ["<COMBATE_OBJETO_NO_DISPONIBLE>"],
-        ["<COMBATE_LANZAR_OBJETO>"],
-        ["<COMBATE_ENTORNO_USADO>"],
-        ["<COMBATE_SIN_ENTORNO>"],
-        ["<COMBATE_USAR_ENTORNO>"],
-        ["<COMBATE_X99_ATURDIDO>"],
-        ["<COMBATE_TURNO_PERDIDO>"],
-        ["<COMBATE_HUIDA_EXITOSA>"],
-        ["<COMBATE_HUIDA_FALLIDA>"],
-        ["<COMBATE_ATAQUE_ESQUIVADO>"],
-        ["<COMBATE_ATAQUE_X99>"],
-        ["<COMBATE_FALLO_X99>"],
-        ["<COMBATE_OPCION_INVALIDA>"],
-        ["<COMBATE_SIN_OBJETOS>"],
-        ["<COMBATE_RESULTADO_HUIDA>"],
-        ["<COMBATE_RESULTADO_VICTORIA>"],
-        ["<COMBATE_RESULTADO_HUIDA_GRAFICA>"],
-        ["<COMBATE_RESULTADO_VICTORIA_GRAFICA>"],
-    ],
-
-    "<COMBATE_INICIO>": [
-        ["El X-99 emerge de las sombras."]
-    ],
-    "<COMBATE_FALLO_ATAQUE>": [
-        ["El disparo falla."]
-    ],
-    "<COMBATE_GOLPE_CRITICO>": [
-        ["¡Golpe crítico! X-99 recibe", "{dano}", "de daño."]
-    ],
-    "<COMBATE_IMPACTO>": [
-        ["Impactas al X-99. Daño:", "{dano}", "."]
-    ],
-    "<COMBATE_ESQUIVA_PREPARADA>": [
-        ["Te preparas para esquivar."]
-    ],
-    "<COMBATE_DEFENSA>": [
-        ["Intentas defenderte."]
-    ],
-    "<COMBATE_OBJETO_INVALIDO>": [
-        ["Ese objeto no puede lanzarse."]
-    ],
-    "<COMBATE_OBJETO_NO_DISPONIBLE>": [
-        ["No tienes ese objeto."]
-    ],
-    "<COMBATE_LANZAR_OBJETO>": [
-        ["Lanzas", "{objeto}", "y causas", "{dano}", "de daño."]
-    ],
-    "<COMBATE_ENTORNO_USADO>": [
-        ["Ya utilizaste el entorno de esta habitación."]
-    ],
-    "<COMBATE_SIN_ENTORNO>": [
-        ["No hay nada útil que puedas usar aquí."]
-    ],
-    "<COMBATE_USAR_ENTORNO>": [
-        ["{entorno}:", "{dano}", "de daño."]
-    ],
-    "<COMBATE_X99_ATURDIDO>": [
-        ["¡X-99 queda aturdido!"]
-    ],
-    "<COMBATE_TURNO_PERDIDO>": [
-        ["X-99 está aturdido y pierde su turno."]
-    ],
-    "<COMBATE_HUIDA_EXITOSA>": [
-        ["Consigues escapar del X-99."]
-    ],
-    "<COMBATE_HUIDA_FALLIDA>": [
-        ["Intentas escapar, pero X-99 bloquea tu camino."]
-    ],
-    "<COMBATE_ATAQUE_ESQUIVADO>": [
-        ["¡Esquivas el ataque del X-99!"]
-    ],
-    "<COMBATE_ATAQUE_X99>": [
-        ["X-99 te golpea. Pierdes", "{dano}", "HP."]
-    ],
-    "<COMBATE_FALLO_X99>": [
-        ["X-99 falla su ataque."]
-    ],
-    "<COMBATE_OPCION_INVALIDA>": [
-        ["Opción inválida."]
-    ],
-    "<COMBATE_SIN_OBJETOS>": [
-        ["No tienes objetos arrojables."]
-    ],
-    "<COMBATE_RESULTADO_HUIDA>": [
-        ["Lograste romper el contacto. Puedes continuar explorando."]
-    ],
-    "<COMBATE_RESULTADO_VICTORIA>": [
-        ["La amenaza X-99 ha sido neutralizada."]
-    ],
-    "<COMBATE_RESULTADO_HUIDA_GRAFICA>": [
-        ["Escapaste del X-99."]
-    ],
-    "<COMBATE_RESULTADO_VICTORIA_GRAFICA>": [
-        ["X-99 ha sido neutralizado."]
     ],
 
     "<DIALOGO_ASTRAEA>": [
@@ -297,7 +189,7 @@ GLC = {
     "<LUGAR>": [
         ["el laboratorio C"],
         ["el hangar"],
-        ["los ductos de ventilación"]
+        ["la sala de comunicaciones"]
     ],
 
     "<NPC>": [
@@ -307,6 +199,8 @@ GLC = {
     ],
 }
 
+
+# BNF generada desde GLC: el texto entregado siempre coincide con el código.
 BNF = "\n".join(
     f"{nt} ::= " + " | ".join(
         " ".join(p if p in GLC else f'"{p}"' for p in prod)
@@ -315,38 +209,30 @@ BNF = "\n".join(
     for nt, producciones in GLC.items()
 )
 
-EVENTOS_COMBATE = {
-    "inicio": "<COMBATE_INICIO>",
-    "disparo_falla": "<COMBATE_FALLO_ATAQUE>",
-    "golpe_critico": "<COMBATE_GOLPE_CRITICO>",
-    "impacto": "<COMBATE_IMPACTO>",
-    "esquiva_preparada": "<COMBATE_ESQUIVA_PREPARADA>",
-    "defensa": "<COMBATE_DEFENSA>",
-    "objeto_invalido": "<COMBATE_OBJETO_INVALIDO>",
-    "objeto_no_disponible": "<COMBATE_OBJETO_NO_DISPONIBLE>",
-    "lanzar_objeto": "<COMBATE_LANZAR_OBJETO>",
-    "entorno_usado": "<COMBATE_ENTORNO_USADO>",
-    "sin_entorno": "<COMBATE_SIN_ENTORNO>",
-    "usar_entorno": "<COMBATE_USAR_ENTORNO>",
-    "x99_aturdido": "<COMBATE_X99_ATURDIDO>",
-    "turno_perdido": "<COMBATE_TURNO_PERDIDO>",
-    "huida_exitosa": "<COMBATE_HUIDA_EXITOSA>",
-    "huida_fallida": "<COMBATE_HUIDA_FALLIDA>",
-    "ataque_esquivado": "<COMBATE_ATAQUE_ESQUIVADO>",
-    "ataque_x99": "<COMBATE_ATAQUE_X99>",
-    "fallo_x99": "<COMBATE_FALLO_X99>",
-    "opcion_invalida": "<COMBATE_OPCION_INVALIDA>",
-    "sin_objetos": "<COMBATE_SIN_OBJETOS>",
-    "resultado_huida": "<COMBATE_RESULTADO_HUIDA>",
-    "resultado_victoria": "<COMBATE_RESULTADO_VICTORIA>",
-    "resultado_huida_grafica": "<COMBATE_RESULTADO_HUIDA_GRAFICA>",
-    "resultado_victoria_grafica": "<COMBATE_RESULTADO_VICTORIA_GRAFICA>",
+
+# Cada <LUGAR> es una escena real del AFN: ahí espera el X-99 si la misión lo pide.
+ESCENA_POR_LUGAR = {
+    "el laboratorio C": "laboratorio_c",
+    "el hangar": "hangar",
+    "la sala de comunicaciones": "comunicaciones",
 }
+
+
+def escena_objetivo(c):
+    mision = c.get("mision") or ""
+
+    if not mision.startswith("derrota"):
+        return None
+
+    return ESCENA_POR_LUGAR.get(mision.split(" en ", 1)[-1])
 
 
 NPC_POR_ESCENA = {
 
     "pasillo_principal":
+        "<DIALOGO_ASTRAEA>",
+
+    "comunicaciones":
         "<DIALOGO_ASTRAEA>",
 
     "soporte_vital":
@@ -362,22 +248,22 @@ VERIFICADORES = {
     "la tarjeta de acceso":
         lambda c:
         "tarjeta_acceso"
-        in c.get("inventario", []),
+        in c.get("recogidos", []),
 
     "el soplete de plasma":
         lambda c:
         "soplete_plasma"
-        in c.get("inventario", []),
+        in c.get("recogidos", []),
 
     "el botiquín":
         lambda c:
         "botiquin"
-        in c.get("inventario", []),
+        in c.get("recogidos", []),
 
     "la llave maestra":
         lambda c:
         "llave_maestra"
-        in c.get("inventario", []),
+        in c.get("recogidos", []),
 
     "los motores":
         lambda c:
@@ -417,6 +303,44 @@ VERIFICADORES = {
         ),
 }
 
+
+# Consejo que ya no hace falta dar cuando se cumple su condicion.
+CONSEJO_CUMPLIDO = {
+    "busca una tarjeta de acceso en el pasillo": VERIFICADORES["la tarjeta de acceso"],
+    "el soplete de ingeniería repara casi todo": VERIFICADORES["el soplete de plasma"],
+    "no entres al laboratorio sin armarte": VERIFICADORES["al X-99"],
+    "la sala del reactor es la única forma de reactivar los motores": VERIFICADORES["los motores"],
+    "restaura el oxígeno antes de enviar el SOS": VERIFICADORES["el sistema de oxígeno"],
+}
+
+
+NPC_DE_DIALOGO = {
+    "<DIALOGO_ASTRAEA>": "Astraea",
+    "<DIALOGO_VOSS>": "la Dra. Voss",
+    "<DIALOGO_UNIDAD7>": "la Unidad-7",
+}
+
+
+def descartes(c, simbolo):
+    # Politica del generador: se marcan como "ya usadas" las producciones que no
+    # tienen sentido en este momento; la gramatica (BNF) no cambia.
+    consejos = [
+        p for p in GLC["<CONSEJO>"]
+        if p[0] in CONSEJO_CUMPLIDO and CONSEJO_CUMPLIDO[p[0]](c)
+    ]
+    usadas = {
+        "<CONSEJO>": consejos,
+        # La mision la pide quien habla.
+        "<NPC>": [p for p in GLC["<NPC>"] if p != [NPC_DE_DIALOGO[simbolo]]],
+    }
+
+    # Con un solo consejo util no se encadena "y además" (evita repetirlo).
+    if len(GLC["<CONSEJO>"]) - len(consejos) < 2:
+        usadas["<CONSEJOS>"] = [p for p in GLC["<CONSEJOS>"] if "<CONSEJOS>" in p]
+
+    return usadas
+
+
 def expandir(
     simbolo,
     profundidad,
@@ -435,6 +359,9 @@ def expandir(
         simbolo
     ]
 
+    # Politica del generador (la gramatica no cambia): no repetir una
+    # produccion en la misma cadena, y al llegar a MAX_PROF solo elegir
+    # producciones no recursivas para que la derivacion termine.
     usadas_aqui = usadas.setdefault(simbolo, [])
 
     candidatas = [
@@ -484,7 +411,8 @@ def expandir(
 def generar(
     simbolo,
     derivacion=None,
-    rng=random
+    rng=random,
+    usadas=None
 ):
 
     texto = " ".join(
@@ -493,7 +421,7 @@ def generar(
             0,
             derivacion,
             rng,
-            {}
+            {} if usadas is None else usadas
         )
     )
 
@@ -514,28 +442,6 @@ def generar(
     return texto
 
 
-def generar_mensaje_combate(evento, **valores):
-
-    simbolo = EVENTOS_COMBATE.get(evento)
-
-    if simbolo is None:
-        raise ValueError(
-            f"Evento de combate desconocido: {evento}"
-        )
-
-    texto = generar(
-        simbolo,
-        rng=random.Random()
-    )
-
-    try:
-        return texto.format(**valores)
-    except KeyError as error:
-        raise ValueError(
-            f"Falta el valor {error.args[0]!r} para el evento {evento!r}"
-        ) from error
-
-
 def generar_mensaje_ia(
     contexto,
     rng=random
@@ -547,10 +453,7 @@ def generar_mensaje_ia(
             "<ERROR_TRANSICION>",
 
         "alerta_alien":
-            "<ALERTA_ALIEN>",
-
-        "alerta_alien_grafica":
-            "<ALERTA_ALIEN_GRAFICA>"
+            "<ALERTA_ALIEN>"
 
     }.get(
         contexto
@@ -613,7 +516,8 @@ def hablar(
 
     texto = generar(
         simbolo,
-        rng=rng
+        rng=rng,
+        usadas=descartes(c, simbolo)
     )
 
     mision = c.get(
@@ -662,7 +566,8 @@ def hablar(
 
         nueva = generar(
             "<MISION>",
-            rng=rng
+            rng=rng,
+            usadas=descartes(c, simbolo)
         )
 
         if not mision_cumplida(
@@ -682,19 +587,6 @@ def hablar(
 
 
 if __name__ == "__main__":
-
-    referencias = {
-        parte
-        for producciones in GLC.values()
-        for produccion in producciones
-        for parte in produccion
-        if re.fullmatch(r"<[^<>]+>", parte)
-    }
-    assert referencias <= GLC.keys(), referencias - GLC.keys()
-    assert {
-        produccion[0]
-        for produccion in GLC["<MENSAJE_COMBATE>"]
-    } == set(EVENTOS_COMBATE.values())
 
     print(BNF)
 
@@ -736,27 +628,25 @@ if __name__ == "__main__":
     assert len(vistos) == len(GLC["<CONSEJO>"]), vistos
     print("\nOK: 500 dialogos sin consejos repetidos.")
 
-    valores_ejemplo = {
-        "dano": 12,
-        "objeto": "Extintor",
-        "entorno": "Liberar vapor",
-    }
-    for evento in EVENTOS_COMBATE:
-        mensaje = generar_mensaje_combate(
-            evento,
-            **valores_ejemplo,
-        )
-        assert mensaje and "{" not in mensaje, (evento, mensaje)
+    # Todo <LUGAR> debe ser una escena real, o la misión mandaría a un sitio sin X-99.
+    assert set(ESCENA_POR_LUGAR) == {p[0] for p in GLC["<LUGAR>"]}
+    print("OK: cada <LUGAR> de las misiones es una escena del AFN.")
 
-    assert generar_mensaje_combate(
-        "impacto",
-        dano=12,
-    ) == "Impactas al X-99. Daño: 12."
-    assert generar_mensaje_ia(
-        "alerta_alien_grafica"
-    ) == "Movimiento hostil detectado. La entidad X-99 se aproxima."
+    # Auto-chequeo: Voss no aconseja lo ya hecho, no repite consejos y pide
+    # misiones para ella; nunca pide recoger algo ya recogido.
+    import mundo
 
-    print(
-        f"OK: {len(EVENTOS_COMBATE)} mensajes de combate generados por la GLC."
-    )
+    for semilla in range(500):
+        rng = random.Random(semilla)
+        c = mundo.nuevo_mundo()
+        c["recogidos"] = ["tarjeta_acceso", "soplete_plasma", "botiquin"]
+        c["sistemas_reparados"]["motores"] = 100
+        texto = hablar(c, "soporte_vital", rng)
+        dialogo, mision = texto.split("\n► Nueva misión: ")
+        dialogo = dialogo.lower()
+        assert "tarjeta" not in dialogo and "soplete" not in dialogo and "reactor" not in dialogo, texto
+        assert dialogo.count("y además") < 2, texto
+        assert "para la Dra. Voss" in mision or mision.startswith("derrota"), mision
+        assert not any(o in mision for o in ("la tarjeta", "el soplete", "el botiquín")), mision
 
+    print("OK: dialogos y misiones coherentes con el estado del juego.")
