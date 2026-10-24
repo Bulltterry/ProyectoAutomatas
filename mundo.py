@@ -52,6 +52,7 @@ ACCIONES_BASE = {
     ],
     "comunicaciones": [
         "reparar_sistemas",
+        "hablar_npc",
     ],
     "hangar": [
         "buscar_objetos",
@@ -109,6 +110,8 @@ def nuevo_mundo():
     return {
         "vida": 100,
         "inventario": [],
+        # Objetos ya recogidos: usar o lanzar uno no lo hace reaparecer en la sala.
+        "recogidos": [],
         "pila_mundo": ["Z0"],
         "sistemas_reparados": {
             "motores": 0,
@@ -137,8 +140,14 @@ def actualizar_pila(c, decision, nuevo_estado):
     if decision.startswith(PREFIJOS_PUSH):
         c["pila_mundo"].append(nuevo_estado)
 
-    elif decision.startswith(PREFIJOS_POP) and len(c["pila_mundo"]) > 1:
-        c["pila_mundo"].pop()
+    elif decision.startswith(PREFIJOS_POP):
+        # Desapila hasta que el tope sea el destino: 1 pop al volver,
+        # varios al salir por la puerta al pasillo. Solo se mira el tope.
+        while len(c["pila_mundo"]) > 1:
+            c["pila_mundo"].pop()
+
+            if c["pila_mundo"][-1] == nuevo_estado:
+                break
 
 
 def puerta_desbloqueada(c, estado):
@@ -175,7 +184,8 @@ def buscar_objeto(estado_actual, c):
     )
 
     for objeto, texto in objetos:
-        if objeto not in c["inventario"]:
+        if objeto not in c["recogidos"]:
+            c["recogidos"].append(objeto)
             c["inventario"].append(objeto)
             return texto
 
@@ -243,3 +253,4 @@ def procesar_accion_mundo(accion, estado_actual, c):
         return "La conversación se procesa mediante la GLC."
 
     return "Acción de mundo no reconocida."
+
