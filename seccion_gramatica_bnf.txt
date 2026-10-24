@@ -1,0 +1,145 @@
+Gramática BNF para generación de diálogos y misiones, con ejemplos de derivaciones válidas
+Notación
+Los elementos escritos entre comillas son terminales: texto literal que aparece en el resultado. ::= significa “se define como” y | separa alternativas. Una producción puede contener varios elementos; se concatenan en el orden indicado. En esta gramática no se usa una producción vacía.
+Las reglas siguientes son una presentación BNF de las producciones de GLC en gramatica.py. Se incluyen las reglas que intervienen en los diálogos y las misiones, además de los mensajes de contexto de Astraea. Las opciones de generación aleatoria del programa eligen entre alternativas, pero no cambian estas producciones.
+
+Reglas para diálogos
+
+<DIALOGO_ASTRAEA> ::= "[Astraea]:" <SALUDO_IA> <CONSEJOS> "."
+<DIALOGO_VOSS> ::= "[Dra. Voss (holograma)]:" <SALUDO_VOSS> <CONSEJOS> "."
+<DIALOGO_UNIDAD7> ::= "[Unidad-7]:" "BIP." <CONSEJOS> "."
+ 
+<SALUDO_IA> ::= "Tripulante, sigo operativa."
+               | "Detecto signos vitales débiles."
+               | "Bienvenido de vuelta."
+ 
+<SALUDO_VOSS> ::= "Si me escuchas, aún queda esperanza."
+                 | "Escucha, no tengo mucho tiempo."
+ 
+<CONSEJOS> ::= <CONSEJO>
+              | <CONSEJO> "y además" <CONSEJOS>
+ 
+<CONSEJO> ::= "busca una tarjeta de acceso en el pasillo"
+             | "el soplete de ingeniería repara casi todo"
+             | "no entres al laboratorio sin armarte"
+             | "los ductos son un atajo impredecible"
+             | "la sala del reactor es la única forma de reactivar los motores"
+             | "restaura el oxígeno antes de enviar el SOS"
+
+
+
+
+
+
+La regla recursiva de <CONSEJOS> permite producir uno o varios consejos: la primera alternativa termina la secuencia y la segunda agrega un consejo seguido de otra secuencia. En el programa, además, se evita repetir una misma producción de consejo dentro de un diálogo.
+Reglas para misiones
+
+<MISION> ::= "recoge" <OBJETO> "para" <NPC>
+           | "repara" <SISTEMA> "para" <NPC>
+           | "derrota" <ENEMIGO> "en" <LUGAR>
+ 
+<OBJETO> ::= "la tarjeta de acceso"
+            | "el soplete de plasma"
+            | "el botiquín"
+            | "la llave maestra"
+ 
+<SISTEMA> ::= "los motores"
+             | "la antena de comunicaciones"
+             | "el sistema de oxígeno"
+ 
+<ENEMIGO> ::= "al X-99"
+ 
+<LUGAR> ::= "el laboratorio C"
+           | "el hangar"
+           | "los ductos de ventilación"
+ 
+<NPC> ::= "la Dra. Voss"
+         | "Astraea"
+         | "la Unidad-7"
+
+
+Estas producciones generan tres clases de misión: recoger un objeto para un personaje, reparar un sistema para un personaje o derrotar al X-99 en un lugar. El código también verifica el cumplimiento mediante el inventario, el porcentaje de reparación de los sistemas o el estado de derrota del enemigo; por ello, la cadena generada describe el objetivo y los datos del juego determinan si se completó.
+
+
+
+
+Mensajes de alerta y transición de Astraea
+Estas reglas adicionales producen mensajes narrativos usados por la función de mensajes de IA:
+
+<ERROR_TRANSICION> ::= "[Astraea]:" <SUJETO> <VERBO> <PROBLEMA>
+<ALERTA_ALIEN> ::= "[ALERTA ROJA]:" <SUJETO> <VERBO> <EVENTO>
+<ALERTA_ALIEN_GRAFICA> ::= "Movimiento hostil detectado. La entidad X-99 se aproxima."
+ 
+<SUJETO> ::= "El sistema central"
+            | "La IA Astraea"
+            | "El monitor de bioseguridad"
+ 
+<VERBO> ::= "informa que"
+           | "advierte que"
+           | "detecta que"
+ 
+<PROBLEMA> ::= "faltan credenciales de acceso" "."
+              | "las puertas están bloqueadas" "."
+              | "el protocolo de seguridad lo impide" "."
+ 
+<EVENTO> ::= "movimiento en los ductos del techo" "."
+            | "una anomalía térmica acercándose" "."
+            | "una brecha de contención cercana" "."
+
+Derivaciones válidas
+En cada ejemplo, se sustituye un no terminal por una de sus producciones hasta obtener únicamente texto terminal. Las llaves angulares se conservan solo durante la derivación y no aparecen en el resultado final.
+
+1. Diálogo de Astraea con un consejo
+<DIALOGO_ASTRAEA>
+? "[Astraea]:" <SALUDO_IA> <CONSEJOS> "."
+? "[Astraea]:" "Bienvenido de vuelta." <CONSEJOS> "."
+? "[Astraea]:" "Bienvenido de vuelta." <CONSEJO> "."
+? "[Astraea]:" "Bienvenido de vuelta." "busca una tarjeta de acceso en el pasillo" "."
+? [Astraea]: Bienvenido de vuelta. busca una tarjeta de acceso en el pasillo.
+
+Cadena generada: [Astraea]: Bienvenido de vuelta. busca una tarjeta de acceso en el pasillo.
+
+
+2. Diálogo de la Dra. Voss con dos consejos
+
+<DIALOGO_VOSS>
+? "[Dra. Voss (holograma)]:" <SALUDO_VOSS> <CONSEJOS> "."
+? "[Dra. Voss (holograma)]:" "Escucha, no tengo mucho tiempo." <CONSEJOS> "."
+? "[Dra. Voss (holograma)]:" "Escucha, no tengo mucho tiempo." <CONSEJO> "y además" <CONSEJOS> "."
+? "[Dra. Voss (holograma)]:" "Escucha, no tengo mucho tiempo." "restaura el oxígeno antes de enviar el SOS" "y además" <CONSEJOS> "."
+? "[Dra. Voss (holograma)]:" "Escucha, no tengo mucho tiempo." "restaura el oxígeno antes de enviar el SOS" "y además" <CONSEJO> "."
+? "[Dra. Voss (holograma)]:" "Escucha, no tengo mucho tiempo." "restaura el oxígeno antes de enviar el SOS" "y además" "no entres al laboratorio sin armarte" "."
+? [Dra. Voss (holograma)]: Escucha, no tengo mucho tiempo. restaura el oxígeno antes de enviar el SOS y además no entres al laboratorio sin armarte.
+Cadena generada: [Dra. Voss (holograma)]: Escucha, no tengo mucho tiempo. restaura el oxígeno antes de enviar el SOS y además no entres al laboratorio sin armarte.
+
+3. Diálogo de la Unidad-7 con un consejo
+<DIALOGO_UNIDAD7>
+? "[Unidad-7]:" "BIP." <CONSEJOS> "."
+? "[Unidad-7]:" "BIP." <CONSEJO> "."
+? "[Unidad-7]:" "BIP." "los ductos son un atajo impredecible" "."
+? [Unidad-7]: BIP. los ductos son un atajo impredecible.
+Cadena generada: [Unidad-7]: BIP. los ductos son un atajo impredecible.
+4. Misión de recolección
+<MISION>
+? "recoge" <OBJETO> "para" <NPC>
+? "recoge" "la tarjeta de acceso" "para" <NPC>
+? "recoge" "la tarjeta de acceso" "para" "la Dra. Voss"
+? recoge la tarjeta de acceso para la Dra. Voss
+Misión generada: recoge la tarjeta de acceso para la Dra. Voss
+5. Misión de reparación
+<MISION>
+? "repara" <SISTEMA> "para" <NPC>
+? "repara" "el sistema de oxígeno" "para" <NPC>
+? "repara" "el sistema de oxígeno" "para" "Astraea"
+? repara el sistema de oxígeno para Astraea
+Misión generada: repara el sistema de oxígeno para Astraea
+
+6. Misión de combate
+<MISION>
+? "derrota" <ENEMIGO> "en" <LUGAR>
+? "derrota" "al X-99" "en" <LUGAR>
+? "derrota" "al X-99" "en" "el laboratorio C"
+? derrota al X-99 en el laboratorio C
+Misión generada: derrota al X-99 en el laboratorio C
+Relación entre la gramática y el programa
+La estructura GLC de gramatica.py almacena cada símbolo no terminal como una lista de producciones; cada producción, a su vez, es una secuencia de elementos terminales o referencias a otros no terminales. El programa construye a partir de esa estructura una representación BNF y la función generar expande recursivamente los símbolos hasta producir el texto final. La puntuación y los espacios se ajustan al final. Las derivaciones anteriores muestran aplicaciones válidas de las reglas, independientemente de la selección aleatoria concreta que se obtenga en una ejecución.
