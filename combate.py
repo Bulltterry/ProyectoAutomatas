@@ -1,5 +1,7 @@
 import random
 
+import gramatica
+
 
 # =========================================================
 # CONFIGURACION
@@ -106,7 +108,8 @@ def combate_forzado(
             False
         )
         and
-        estado_mapa == "laboratorio_c"
+        # Guarida fija del X-99, o la sala que indica la misión "derrota al X-99 en ...".
+        estado_mapa in ("laboratorio_c", gramatica.escena_objetivo(c))
     )
 
 
@@ -852,3 +855,4 @@ if __name__ == "__main__":
         assert (fin == "FIN_VICTORIA") == c["alien_derrotado"]
 
     print("OK: 300 combates terminan en un estado final valido.")
+
