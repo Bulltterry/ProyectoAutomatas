@@ -1,21 +1,29 @@
-"""
-Motor narrativo = AFN
-N = (Q, Sigma, delta, q0, F)
-
-La tarjeta de acceso abre solo Ingenieria y Soporte Vital.
-Laboratorio C, Comunicaciones y Hangar permanecen bloqueados desde el pasillo
-hasta que el jugador llegue a ellos por los ductos y desbloquee la puerta desde dentro.
-
-La transicion 'entrar_ductos' es no determinista porque puede conducir a varios
-estados distintos con la misma entrada.
-
-La transicion 'volver' depende de la pila del mundo (mundo.py): se regresa a la
-sala que queda debajo del tope, es decir, por el mismo camino por el que se entro.
-"""
-
 import random
 
 ESTADO_INICIAL = "aislado_inicio"
+
+# Texto de la escena q0. Su unica salida es explorar_pasillo: siempre termina en el pasillo.
+INTRO = [
+    (
+        "AISLADO // INICIO",
+        "Despiertas dentro de una cápsula de aislamiento médico de la nave Astraea. "
+        "Las luces de emergencia parpadean y el silencio es total. "
+        "No sabes cuánto tiempo estuviste inconsciente.",
+    ),
+    (
+        "ASTRAEA",
+        "[Astraea]: Tripulante, sigo operativa. Hubo una brecha de contención en el "
+        "Laboratorio C: la entidad X-99 escapó y el resto de la tripulación no responde. "
+        "Los motores, el oxígeno y las comunicaciones están dañados.",
+    ),
+    (
+        "AISLADO // INICIO",
+        "El Laboratorio C, Comunicaciones y el Hangar quedaron sellados desde dentro; "
+        "solo los ductos de ventilación llegan hasta ellos. Para el resto de la nave "
+        "necesitarás una tarjeta de acceso. La compuerta de aislamiento se abre: "
+        "el Pasillo Principal te espera.",
+    ),
+]
 
 ESTADOS_ACEPTACION = {
     "final_a_victoria",
@@ -57,16 +65,14 @@ def debajo_del_tope(sala):
 
 
 def regreso(sala):
-    # Volver al pasillo cruza la puerta; volver a otro sector usa el ducto.
+    # Volver = deshacer el ultimo paso (por donde se entro): va a la sala debajo del tope.
     al_pasillo = debajo_del_tope("pasillo_principal")
 
-    if sala in SALAS_DUCTOS:
-        puerta = puerta_desbloqueada(sala)
-        destinos = [("pasillo_principal", lambda c: al_pasillo(c) and puerta(c))]
-    else:
-        destinos = [("pasillo_principal", al_pasillo)]
+    # Ingenieria y Soporte Vital solo se alcanzan desde el pasillo.
+    if sala not in SALAS_DUCTOS:
+        return [("pasillo_principal", al_pasillo)]
 
-    return destinos + [
+    return [("pasillo_principal", al_pasillo)] + [
         (otra, debajo_del_tope(otra))
         for otra in SALAS_DUCTOS
         if otra != sala
@@ -112,8 +118,7 @@ TRANSICIONES = {
         ("laboratorio_c", puerta_desbloqueada("laboratorio_c"))
     ],
 
-    # AFN: la misma decision puede llevar a tres destinos distintos.
-    # Estos son precisamente los sectores inicialmente bloqueados.
+    # La misma decision puede llevar a tres destinos distintos.
     ("pasillo_principal", "entrar_ductos"): [
         ("laboratorio_c", siempre),
         ("comunicaciones", siempre),
@@ -130,7 +135,6 @@ TRANSICIONES = {
     ],
 
     # Los ductos conectan los sectores bloqueados entre si: el jugador puede
-    # anidarse sin limite (pasillo > hangar > lab > hangar > ...).
     ("laboratorio_c", "entrar_ductos"): [
         ("comunicaciones", siempre),
         ("hangar", siempre),
@@ -152,6 +156,18 @@ TRANSICIONES = {
     ("comunicaciones", "volver"): regreso("comunicaciones"),
     ("hangar", "volver"): regreso("hangar"),
     ("laboratorio_c", "volver"): regreso("laboratorio_c"),
+
+    # La puerta da siempre al pasillo, pero solo se abre desde dentro.
+    # La pila se desapila hasta el pasillo (mundo.actualizar_pila).
+    ("comunicaciones", "salir_puerta"): [
+        ("pasillo_principal", puerta_desbloqueada("comunicaciones"))
+    ],
+    ("hangar", "salir_puerta"): [
+        ("pasillo_principal", puerta_desbloqueada("hangar"))
+    ],
+    ("laboratorio_c", "salir_puerta"): [
+        ("pasillo_principal", puerta_desbloqueada("laboratorio_c"))
+    ],
 
     # Final B
     ("hangar", "escapar_capsula"): [
