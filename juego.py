@@ -264,6 +264,11 @@ def main():
     )
 
 
+    for titulo, texto in narrativa.INTRO:
+
+        print(f"\n[{titulo}]\n{texto}")
+
+
     while True:
 
 
